@@ -71,16 +71,26 @@
 
             // Parse the input
             let years = [];
-            if (yearRangeInput.includes(',') || yearRangeInput.includes(' ')) {
-                years = yearRangeInput.split(/[\s,]+/).map(Number);
-            } else if (yearRangeInput.includes('-')) {
-                const [startYear, endYear] = yearRangeInput.split('-').map(Number);
-                for (let year = startYear; year <= endYear; year++) {
-                    years.push(year);
+            const parts = yearRangeInput.split(/[\s,]+/);
+            parts.forEach(part => {
+                if (part.includes('-')) {
+                    const [startYear, endYear] = part.split('-').map(Number);
+                    if (!isNaN(startYear) && !isNaN(endYear) && startYear <= endYear) {
+                        for (let year = startYear; year <= endYear; year++) {
+                            years.push(year);
+                        }
+                    } else {
+                        years.push(NaN); // Invalid range
+                    }
+                } else {
+                    const year = parseInt(part, 10);
+                    if (!isNaN(year)) {
+                        years.push(year);
+                    } else {
+                        years.push(NaN); // Invalid year
+                    }
                 }
-            } else {
-                years = [parseInt(yearRangeInput, 10)];
-            }
+            });
 
             // Validate input
             if (years.some(isNaN)) {
