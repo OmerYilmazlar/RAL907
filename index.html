@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAL907 Masonic Lodge Meeting Date Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 20px;
+            background-color: #f0f0f0; /* Soft grey background color */
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .center-text {
+            text-align: center;
+        }
+        .logo {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 20px; /* Space below the logo */
+            max-width: 150px; /* Adjust the size of the logo */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo Image -->
+        <img src="RAL907.png" alt="RAL907 Logo" class="logo">
+
+        <!-- Centered Title -->
+        <h2 class="center-text">RAL907 Masonic Lodge Meeting Date Calculator</h2>
+
+        <!-- Centered Description -->
+        <div class="mb-3 center-text">
+            <label for="yearRange" class="form-label">Enter a year, a range of years, or multiple years separated by commas or spaces (e.g., 2034, 2034-2038, or 2025 2045):</label>
+        </div>
+
+        <!-- Input Field -->
+        <div class="mb-3">
+            <input type="text" id="yearRange" class="form-control" placeholder="Enter year or year range">
+        </div>
+
+        <!-- Calculate Button -->
+        <div class="text-center">
+            <button class="btn btn-primary" onclick="calculateMeetings()">Calculate Dates</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="result text-center"></div>
+    </div>
+
+    <script>
+        function getNthWeekday(year, month, weekday, n) {
+            let count = 0;
+            for (let day = 1; day <= 31; day++) {
+                const date = new Date(year, month - 1, day);
+                if (date.getMonth() !== month - 1) break; // Invalid day for this month
+                if (date.getDay() === weekday) {
+                    count++;
+                    if (count === n) return day;
+                }
+            }
+            return null;
+        }
+
+        function calculateDates(year) {
+            const meetings = {
+                "February": { month: 2, weekday: 1, occurrence: 1 },
+                "March": { month: 3, weekday: 1, occurrence: 3 },
+                "April": { month: 4, weekday: 1, occurrence: 3, installation: true },
+                "October": { month: 10, weekday: 2, occurrence: 3 },
+                "December": { month: 12, weekday: 1, occurrence: 3 },
+            };
+            
+            let results = [];
+            for (let month in meetings) {
+                const { month: m, weekday, occurrence, installation } = meetings[month];
+                const day = getNthWeekday(year, m, weekday, occurrence);
+                if (day) {
+                    let dateText = `${day} ${month} ${year}`;
+                    if (installation) dateText += " (Installation)";
+                    results.push(dateText);
+                }
+            }
+            return results;
+        }
+
+        function calculateMeetings() {
+            const yearRangeInput = document.getElementById("yearRange").value.trim();
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";  // Clear previous results
+
+            // Parse the input
+            let years = [];
+            const parts = yearRangeInput.split(/[\s,]+/);
+            parts.forEach(part => {
+                if (part.includes('-')) {
+                    const [startYear, endYear] = part.split('-').map(Number);
+                    if (!isNaN(startYear) && !isNaN(endYear) && startYear <= endYear) {
+                        for (let year = startYear; year <= endYear; year++) {
+                            years.push(year);
+                        }
+                    } else {
+                        years.push(NaN); // Invalid range
+                    }
+                } else {
+                    const year = parseInt(part, 10);
+                    if (!isNaN(year)) {
+                        years.push(year);
+                    } else {
+                        years.push(NaN); // Invalid year
+                    }
+                }
+            });
+
+            // Validate input
+            if (years.some(isNaN)) {
+                resultsDiv.innerHTML = "<p class='text-danger'>Please enter a valid year or range of years.</p>";
+                return;
+            }
+
+            // Generate results for each year
+            years.forEach(year => {
+                const dates = calculateDates(year);
+                resultsDiv.innerHTML += `<h5>Meeting Dates for ${year}:</h5>`;
+                dates.forEach(date => {
+                    resultsDiv.innerHTML += `<p>${date}</p>`;
+                });
+                resultsDiv.innerHTML += "<br>"; // Blank line between years
+            });
+        }
+
+        // Add event listener for the "Enter" key
+        document.getElementById("yearRange").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent the default form submission behavior
+                calculateMeetings();
+            }
+        });
+    </script>
+</body>
+</html>
