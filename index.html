@@ -1,46 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAL907 Masonic Lodge Meeting Date Calculator</title>
+    <title>RAL907 Lodge Meeting Date Calculator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         body {
             margin: 20px;
-            background-color: #f0f0f0; /* Soft grey background color */
+            background-color: #f0f0f0;
+            /* Soft grey background color */
         }
+
         .result {
             margin-top: 20px;
         }
+
         .center-text {
             text-align: center;
         }
+
         .logo {
             display: block;
             margin-left: auto;
             margin-right: auto;
-            margin-bottom: 20px; /* Space below the logo */
-            max-width: 150px; /* Adjust the size of the logo */
+            margin-bottom: 20px;
+            /* Space below the logo */
+            max-width: 150px;
+            /* Adjust the size of the logo */
+        }
+
+        .results-card {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 80px;
+            /* Moved left of PDF button */
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .copy-feedback {
+            position: absolute;
+            top: 10px;
+            right: 160px;
+            /* Positioned left of copy button */
+            padding: 5px 10px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .pdf-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            /* Moved to far right */
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        @media print {
+
+            /* Hide everything initially */
+            body * {
+                visibility: hidden;
+            }
+
+            /* Only show the results card and its contents */
+            .results-card,
+            .results-card * {
+                visibility: visible;
+            }
+
+            /* Position the results card at the top of the page */
+            .results-card {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                margin: 0;
+                padding: 20px;
+            }
+
+            /* Hide the buttons when printing */
+            .copy-btn,
+            .pdf-btn,
+            .copy-feedback {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Logo Image -->
         <img src="RAL907.png" alt="RAL907 Logo" class="logo">
 
         <!-- Centered Title -->
-        <h2 class="center-text">RAL907 Masonic Lodge Meeting Date Calculator</h2>
+        <h2 class="center-text">RAL907 Lodge Meeting Date Calculator</h2>
 
         <!-- Centered Description -->
         <div class="mb-3 center-text">
-            <label for="yearRange" class="form-label">Enter a year, a range of years, or multiple years separated by commas or spaces (e.g., 2034, 2034-2038, or 2025 2045):</label>
+            <div class="mt-3 text-muted">
+                <ul class="list-unstyled">
+                    <li>3rd Tuesday of October</li>
+                    <li>3rd Monday of December</li>
+                    <li>1st Monday of February</li>
+                    <li>3rd Monday of March</li>
+                    <li>3rd Monday of April (Installation)</li>
+                </ul>
+            </div>
+            <label for="yearRange" class="form-label fw-semibold">Enter a year, a range of years, or multiple years
+                separated by
+                commas or spaces (e.g., 2034, 2034-2038, or 2025 2045):</label>
         </div>
 
         <!-- Input Field -->
         <div class="mb-3">
-            <input type="text" id="yearRange" class="form-control" placeholder="Enter year, years or year range">
+            <input type="text" id="yearRange" class="form-control" placeholder="Enter year or year range">
         </div>
 
         <!-- Calculate Button -->
@@ -74,7 +169,7 @@
                 "October": { month: 10, weekday: 2, occurrence: 3 },
                 "December": { month: 12, weekday: 1, occurrence: 3 },
             };
-            
+
             let results = [];
             for (let month in meetings) {
                 const { month: m, weekday, occurrence, installation } = meetings[month];
@@ -122,19 +217,64 @@
                 return;
             }
 
-            // Generate results for each year
+            // Create results container
+            const resultsContainer = document.createElement('div');
+            resultsContainer.className = 'results-card';
+
+            // Add copy button
+            const copyButton = document.createElement('button');
+            copyButton.className = 'btn btn-sm btn-outline-primary copy-btn';
+            copyButton.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
+            resultsContainer.appendChild(copyButton);
+
+            // Add feedback element
+            const feedback = document.createElement('span');
+            feedback.className = 'copy-feedback';
+            feedback.textContent = 'Copied!';
+            resultsContainer.appendChild(feedback);
+
+            // Generate results content
+            let resultsContent = '';
             years.forEach(year => {
                 const dates = calculateDates(year);
-                resultsDiv.innerHTML += `<h5>Meeting Dates for ${year}:</h5>`;
+                resultsContent += `<h5>Meeting Dates for ${year}:</h5>`;
                 dates.forEach(date => {
-                    resultsDiv.innerHTML += `<p>${date}</p>`;
+                    resultsContent += `<p>${date}</p>`;
                 });
-                resultsDiv.innerHTML += "<br>"; // Blank line between years
+                resultsContent += "<hr>";
             });
+
+            // Add content to container
+            const contentDiv = document.createElement('div');
+            contentDiv.innerHTML = resultsContent;
+            resultsContainer.appendChild(contentDiv);
+
+            // Add copy functionality
+            copyButton.addEventListener('click', () => {
+                navigator.clipboard.writeText(contentDiv.innerText).then(() => {
+                    feedback.style.display = 'block';
+                    setTimeout(() => {
+                        feedback.style.display = 'none';
+                    }, 2000);
+                });
+            });
+
+            // Add PDF button
+            const pdfButton = document.createElement('button');
+            pdfButton.className = 'btn btn-sm btn-outline-secondary pdf-btn';
+            pdfButton.innerHTML = '<i class="bi bi-file-pdf"></i> PDF';
+            pdfButton.onclick = () => window.print();
+            resultsContainer.appendChild(pdfButton);
+
+            // Update copy button position
+            copyButton.className = 'btn btn-sm btn-outline-primary copy-btn';
+
+            // Add to page
+            resultsDiv.appendChild(resultsContainer);
         }
 
         // Add event listener for the "Enter" key
-        document.getElementById("yearRange").addEventListener("keydown", function(event) {
+        document.getElementById("yearRange").addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
                 event.preventDefault(); // Prevent the default form submission behavior
                 calculateMeetings();
@@ -142,4 +282,5 @@
         });
     </script>
 </body>
+
 </html>
