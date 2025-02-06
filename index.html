@@ -106,6 +106,57 @@
                 display: none;
             }
         }
+
+        @media (max-width: 768px) {
+            .copy-btn {
+                position: static;
+                margin: 10px 5px;
+                display: inline-block;
+            }
+
+            .pdf-btn {
+                position: static;
+                margin: 10px 5px;
+                display: inline-block;
+            }
+
+            .copy-feedback {
+                position: absolute;
+                top: 50%;
+                right: calc(75% + 10px);
+                /* Position to the left of buttons */
+                transform: translateY(-50%);
+                text-align: center;
+                background: #28a745;
+                color: white;
+                border-radius: 4px;
+                padding: 5px 10px;
+                width: fit-content;
+                z-index: 1000;
+            }
+
+            .results-card {
+                padding-top: 20px;
+                position: relative;
+            }
+
+            .button-container {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                margin: 0 0 20px 0;
+            }
+
+            .copy-btn,
+            .pdf-btn {
+                position: static;
+                padding: 5px 10px;
+                font-size: 14px;
+                cursor: pointer;
+            }
+        }
     </style>
 </head>
 
@@ -221,19 +272,32 @@
             const resultsContainer = document.createElement('div');
             resultsContainer.className = 'results-card';
 
+            // Create button container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+            resultsContainer.appendChild(buttonContainer);
+
             // Add copy button
             const copyButton = document.createElement('button');
             copyButton.className = 'btn btn-sm btn-outline-primary copy-btn';
             copyButton.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
-            resultsContainer.appendChild(copyButton);
+            buttonContainer.appendChild(copyButton);
+
+            // Add PDF button
+            const pdfButton = document.createElement('button');
+            pdfButton.className = 'btn btn-sm btn-outline-secondary pdf-btn';
+            pdfButton.innerHTML = '<i class="bi bi-file-pdf"></i> PDF';
+            pdfButton.onclick = () => window.print();
+            buttonContainer.appendChild(pdfButton);
 
             // Add feedback element
             const feedback = document.createElement('span');
             feedback.className = 'copy-feedback';
             feedback.textContent = 'Copied!';
-            resultsContainer.appendChild(feedback);
+            buttonContainer.appendChild(feedback);
 
-            // Generate results content
+            // Generate and add content
+            const contentDiv = document.createElement('div');
             let resultsContent = '';
             years.forEach(year => {
                 const dates = calculateDates(year);
@@ -243,9 +307,6 @@
                 });
                 resultsContent += "<hr>";
             });
-
-            // Add content to container
-            const contentDiv = document.createElement('div');
             contentDiv.innerHTML = resultsContent;
             resultsContainer.appendChild(contentDiv);
 
@@ -258,16 +319,6 @@
                     }, 2000);
                 });
             });
-
-            // Add PDF button
-            const pdfButton = document.createElement('button');
-            pdfButton.className = 'btn btn-sm btn-outline-secondary pdf-btn';
-            pdfButton.innerHTML = '<i class="bi bi-file-pdf"></i> PDF';
-            pdfButton.onclick = () => window.print();
-            resultsContainer.appendChild(pdfButton);
-
-            // Update copy button position
-            copyButton.className = 'btn btn-sm btn-outline-primary copy-btn';
 
             // Add to page
             resultsDiv.appendChild(resultsContainer);
